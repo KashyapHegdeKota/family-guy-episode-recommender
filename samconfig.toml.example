@@ -1,0 +1,14 @@
+# AWS SAM Configuration for deployment
+
+# You can customize these settings or use sam deploy --guided to set them interactively
+
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "family-guy-episode-recommender"
+s3_prefix = "family-guy-episode-recommender"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

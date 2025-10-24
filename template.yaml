@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Family Guy Episode Recommender - Serverless Backend
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        NODE_ENV: production
+
+Resources:
+  # Lambda Function
+  EpisodeRecommenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: family-guy-episode-recommender
+      CodeUri: lambda/
+      Handler: index.handler
+      Description: Returns Family Guy episode recommendations based on mood
+      Events:
+        GetEpisode:
+          Type: Api
+          Properties:
+            Path: /recommend
+            Method: get
+            RestApiId: !Ref EpisodeRecommenderApi
+        OptionsEpisode:
+          Type: Api
+          Properties:
+            Path: /recommend
+            Method: options
+            RestApiId: !Ref EpisodeRecommenderApi
+
+  # API Gateway
+  EpisodeRecommenderApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: FamilyGuyEpisodeRecommenderApi
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  # CloudWatch Log Group
+  EpisodeRecommenderLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${EpisodeRecommenderFunction}'
+      RetentionInDays: 7
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${EpisodeRecommenderApi}.execute-api.${AWS::Region}.amazonaws.com/prod/recommend"
+    Export:
+      Name: FamilyGuyEpisodeRecommenderApiEndpoint
+  
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt EpisodeRecommenderFunction.Arn
+    Export:
+      Name: FamilyGuyEpisodeRecommenderFunctionArn
